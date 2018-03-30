@@ -1,3 +1,14 @@
 {  
-    "extends": "grumbler-scripts/config/.babelrc"
+    "extends": "grumbler-scripts/config/.babelrc",
+    "presets": [
+        [
+            "env", {
+                "exclude": ["transform-regenerator"],
+                "targets": {
+                    "node": "6.0"
+                },
+                "loose": true
+            }
+        ]
+    ]
 }
