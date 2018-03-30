@@ -1,0 +1,37 @@
+{
+  "name": "subprocess-robot",
+  "version": "1.0.1",
+  "description": "Create processes, process pools, and message between processes",
+  "main": "index.js",
+  "scripts": {
+    "flow-typed": "flow-typed install",
+    "babel": "babel src/**/*.js --exclude=node_modules --out-dir .",
+    "test": "npm run lint && npm run flow-typed && npm run lint",
+    "flow": "flow",
+    "lint": "eslint src/ test/ *.js",
+    "prepublish": "in-publish && npm run babel",
+    "postpublish": "git checkout src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krakenjs/subprocess-robot.git"
+  },
+  "keywords": [
+    "process",
+    "subprocess",
+    "node"
+  ],
+  "author": "dbrain",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/krakenjs/subprocess-robot/issues"
+  },
+  "homepage": "https://github.com/krakenjs/subprocess-robot#readme",
+  "devDependencies": {
+    "flow-bin": "^0.56.0",
+    "grumbler-scripts": "^2.0.7"
+  },
+  "dependencies": {
+    "uuid": "^3.2.1"
+  }
+}
