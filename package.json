@@ -29,6 +29,8 @@
   },
   "homepage": "https://github.com/krakenjs/subprocess-robot#readme",
   "devDependencies": {
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
     "flow-bin": "^0.56.0",
     "grumbler-scripts": "^2.0.7"
   },

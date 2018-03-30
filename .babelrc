@@ -10,5 +10,9 @@
                 "loose": true
             }
         ]
+    ],
+    "plugins": [
+        [ "syntax-async-functions", { "loose": true } ],
+        [ "transform-async-to-generator", { "loose": true } ]
     ]
 }
