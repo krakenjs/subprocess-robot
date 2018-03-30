@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "flow-typed": "flow-typed install",
+    "flow:build": "flow gen-flow-files ./src/index.js --out-dir ./src",
     "babel": "babel src/**/*.js --exclude=node_modules --out-dir . --source-maps inline",
     "test": "npm run lint && npm run flow-typed && npm run lint",
     "flow": "flow",
     "lint": "eslint src/ test/ *.js",
-    "prepublish": "in-publish && npm run babel",
+    "prepublish": "in-publish && npm run flow:build && npm run babel",
     "postpublish": "git checkout src"
   },
   "repository": {
