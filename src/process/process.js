@@ -85,7 +85,7 @@ export function setupListener(proc : AnyProcess | Process) {
                     proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.SUCCESS, uid, name, response: serializeMethods(proc, response, listen) });
                 }, error => {
                     // $FlowFixMe
-                    proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.ERROR, uid, name, error });
+                    proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.ERROR, uid, name, error: error.stack || error.message });
                 });
 
         } else if (type === MESSAGE_TYPE.RESPONSE) {
@@ -101,9 +101,9 @@ export function setupListener(proc : AnyProcess | Process) {
             let { status, response, error } = msg;
 
             if (status === MESSAGE_STATUS.SUCCESS) {
-                resolve(response);
+                resolve(deserializeMethods(proc, response, send));
             } else if (status === MESSAGE_STATUS.ERROR) {
-                reject(error);
+                reject(new Error(error));
             }
         }
     });
