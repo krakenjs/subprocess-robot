@@ -3,6 +3,7 @@
 import { cpus } from 'os';
 
 import type { SpawnedProcess, Handler, Cancelable } from '../types';
+import { replaceObject } from '../lib';
 
 import { spawnProcess } from './master';
 
@@ -25,12 +26,16 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         work[i] = 0;
     }
 
-    async function withProcess<T>(handler : (worker : SpawnedProcess) => Promise<T>) : Promise<T> {
+    async function loadBalance<T>(handler : (worker : SpawnedProcess) => Promise<T>) : Promise<T> {
         let pid = Object.keys(pool).sort((a, b) => (work[a] - work[b]))[0];
         work[pid] += 1;
         let result = await handler(pool[pid]);
         work[pid] -= 1;
         return result;
+    }
+
+    async function loadBalanceRequire<T>(path : string) : Promise<T> {
+        return await loadBalance(async (worker) => await worker.require(path));
     }
 
     return {
@@ -42,10 +47,21 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
             };
         },
         async send<M : mixed, R : mixed>(name : string, message : M) : Promise<R> {
-            return await withProcess(async (worker) => await worker.send(name, message));
+            return await loadBalance(async (worker) => await worker.send(name, message));
         },
         async require<T : Object> (name : string) : Promise<T> {
-            return await withProcess(async (worker) => await worker.require(name));
+            let childModule = await loadBalanceRequire(name);
+
+            return replaceObject(childModule, (item, key) => {
+                if (typeof item === 'function') {
+                    return async function processRequireWrapper<A : mixed, R : mixed>(...args : Array<A>) : Promise<R> {
+                        let loadBalanceModule = await loadBalanceRequire(name);
+                        return await loadBalanceModule[key](...args);
+                    };
+                }
+            });
         }
     };
 }
+
+ 
