@@ -11,15 +11,21 @@ import type { ListenFunctionType, SendFunctionType } from './process';
 let serializedMethods = {};
 let methodListeners = new WeakMap();
 
+function listenForMethodCalls(destination, listen) {
+    if (!methodListeners.has(destination)) {
+        methodListeners.set(destination, listen(process, BUILTIN_MESSAGE.METHOD_CALL, async ({ uid, args }) => {
+            let method = serializedMethods[uid];
+            return await method(...args);
+        }));
+    }
+}
+
 export function serializeMethods<T : mixed>(destination : AnyProcess, obj : T, listen : ListenFunctionType) : T {
     return replaceObject(obj, (item) => {
         if (typeof item === 'function') {
             let uid = uuidv4();
             serializedMethods[uid] = { process, method: item };
-
-            if (!methodListeners.has(destination)) {
-                methodListeners.set(destination, listen(process, BUILTIN_MESSAGE.METHOD_CALL, item));
-            }
+            listenForMethodCalls(destination, listen);
 
             return {
                 __type__: SERIALIZATION_TYPE.METHOD,
@@ -32,9 +38,11 @@ export function serializeMethods<T : mixed>(destination : AnyProcess, obj : T, l
 export function deserializeMethods<T : mixed>(origin : AnyProcess, obj : T, send : SendFunctionType) : T {
     return replaceObject(obj, (item) => {
         if (item && item.__type__ === SERIALIZATION_TYPE.METHOD) {
+            // $FlowFixMe
+            let uid = item.__uid__;
             return async function processMessageWrapper<A : Array<mixed>, R : mixed > (...args : A) : R {
                 // $FlowFixMe
-                return await send(origin, BUILTIN_MESSAGE.METHOD_CALL, args);
+                return await send(origin, BUILTIN_MESSAGE.METHOD_CALL, { uid, args });
             };
         }
     });

@@ -82,7 +82,7 @@ export function setupListener(proc : AnyProcess | Process) {
                 .then(() => handler(deserializeMethods(proc, message, send)))
                 .then(response => {
                     // $FlowFixMe
-                    proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.SUCCESS, uid, name, response });
+                    proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.SUCCESS, uid, name, response: serializeMethods(proc, response, listen) });
                 }, error => {
                     // $FlowFixMe
                     proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.ERROR, uid, name, error });

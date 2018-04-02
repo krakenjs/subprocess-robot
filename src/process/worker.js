@@ -43,9 +43,8 @@ export let attachProcess = memoize(() : AttachProcess => {
     messageMaster(BUILTIN_MESSAGE.READY);
 
     return {
-        on:      <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => listenMaster(name, handler),
-        send:    <M : mixed, R : mixed>(name : string, message : M) : Promise<R> => messageMaster(name, message),
-        require: <T : Object>(name : string) : Promise<T> => messageMaster(BUILTIN_MESSAGE.REQUIRE, name)
+        on:   <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => listenMaster(name, handler),
+        send: <M : mixed, R : mixed>(name : string, message : M) : Promise<R> => messageMaster(name, message)
     };
 });
 

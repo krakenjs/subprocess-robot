@@ -7,6 +7,8 @@ import type { AnyProcess, Handler, SpawnedProcess, Cancelable } from '../types';
 
 import { listen, send, setupListener } from './process';
 
+const DEFAULT_WORKER_SCRIPT = require.resolve('./worker');
+
 export function listenWorker<M : mixed, R : mixed>(worker : AnyProcess, name : string, handler : Handler<M, R>) : Cancelable {
     return listen(worker, name, handler);
 }
@@ -30,7 +32,7 @@ type SpawnOptions = {
 
 export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
 
-    script = script || __filename;
+    script = script || DEFAULT_WORKER_SCRIPT;
 
     let worker = spawn(NODE_PATH, [ '--require', 'babel-register', script ], {
         stdio: [ null, null, null, 'ipc' ],
