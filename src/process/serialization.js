@@ -11,10 +11,13 @@ import type { ListenFunctionType, SendFunctionType } from './process';
 let serializedMethods = {};
 let methodListeners = new WeakMap();
 
-function listenForMethodCalls(destination, listen) {
-    if (!methodListeners.has(destination)) {
-        methodListeners.set(destination, listen(process, BUILTIN_MESSAGE.METHOD_CALL, async ({ uid, args }) => {
-            let method = serializedMethods[uid];
+function listenForMethodCalls(origin, listen) {
+    if (!methodListeners.has(origin)) {
+        methodListeners.set(origin, listen(process, BUILTIN_MESSAGE.METHOD_CALL, async ({ uid, args }) => {
+            let { method, process } = serializedMethods[uid];
+            if (origin !== process) {
+                throw new Error(`Recieved request for method from wrong processs`);
+            }
             return await method(...args);
         }));
     }
