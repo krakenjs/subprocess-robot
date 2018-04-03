@@ -54,18 +54,18 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
 
     let readyPromise = listenWorkerOnce(worker, BUILTIN_MESSAGE.READY);
 
-    let processOn = <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => {
+    function processOn <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable {
         return listenWorker(worker, name, handler);
-    };
+    }
 
-    let processSend = async <M : mixed, R : mixed>(name : string, message : M) : Promise<R> => {
+    async function processSend<M : mixed, R : mixed>(name : string, message : M) : Promise<R> {
         await readyPromise;
         return await messageWorker(worker, name, message);
-    };
+    }
 
     let requireCache = {};
 
-    let processRequire = async <T : Object>(name : string) : Promise<T> => {
+    async function processRequire <T : Object>(name : string) : Promise<T> {
         await readyPromise;
 
         if (!requireCache[name]) {
@@ -73,7 +73,7 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         }
 
         return await requireCache[name];
-    };
+    }
 
     return {
         on:      processOn,
