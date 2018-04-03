@@ -80,9 +80,10 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
             let parentMod = require(name); // eslint-disable-line security/detect-non-literal-require
             mod = replaceObject(mod, (item, key) => {
                 if (typeof item === 'function') {
+                    const func = item;
                     return async (...args) => {
                         let [ childResult ] = await Promise.all([
-                            item(...args),
+                            func(...args),
                             parentMod[key](...args)
                         ]);
                         return childResult;
