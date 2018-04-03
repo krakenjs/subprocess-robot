@@ -60,6 +60,9 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
                     };
                 }
             });
+        },
+        kill: () => {
+            pool.forEach(worker => worker.kill());
         }
     };
 }

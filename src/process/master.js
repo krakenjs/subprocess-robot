@@ -46,6 +46,7 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
     worker.stdout.on('data', (data) => {
         process.stdout.write(data.toString());
     });
+
     worker.stderr.on('data', (data) => {
         process.stderr.write(data.toString());
     });
@@ -75,9 +76,14 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         return await requireCache[name];
     }
 
+    function processKill() {
+        worker.kill();
+    }
+
     return {
         on:      processOn,
         send:    processSend,
-        require: processRequire
+        require: processRequire,
+        kill:    processKill
     };
 }
