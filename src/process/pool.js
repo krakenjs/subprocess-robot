@@ -3,7 +3,7 @@
 import { cpus } from 'os';
 
 import type { SpawnedProcess, Handler, Cancelable } from '../types';
-import { replaceObject } from '../lib';
+import { replaceObject, values } from '../lib';
 
 import { spawnProcess } from './master';
 
@@ -40,7 +40,7 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
 
     return {
         on: <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable => {
-            let listeners = pool.map(worker => worker.on(name, handler));
+            let listeners = values(pool).map(worker => worker.on(name, handler));
 
             return {
                 cancel: () => listeners.forEach(listener => listener.cancel())
@@ -62,7 +62,7 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
             });
         },
         kill: () => {
-            pool.forEach(worker => worker.kill());
+            values(pool).forEach(worker => worker.kill());
         }
     };
 }

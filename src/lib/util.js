@@ -65,3 +65,13 @@ export function memoize<R>(method : (...args: Array<any>) => R) : ((...args: Arr
         return cache[key];
     };
 }
+
+export function values<T>(obj : { [string] : T }) : Array<T> {
+    let result = [];
+    for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            result.push(obj[key]);
+        }
+    }
+    return result;
+}
