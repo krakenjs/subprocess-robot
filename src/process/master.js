@@ -54,9 +54,30 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
 
     let readyPromise = listenWorkerOnce(worker, BUILTIN_MESSAGE.READY);
 
+    let processOn = <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => {
+        return listenWorker(worker, name, handler);
+    };
+
+    let processSend = async <M : mixed, R : mixed>(name : string, message : M) : Promise<R> => {
+        await readyPromise;
+        return await messageWorker(worker, name, message);
+    };
+
+    let requireCache = {};
+
+    let processRequire = async <T : Object>(name : string) : Promise<T> => {
+        await readyPromise;
+
+        if (!requireCache[name]) {
+            requireCache[name] = messageWorker(worker, BUILTIN_MESSAGE.REQUIRE, name);
+        }
+
+        return await requireCache[name];
+    };
+
     return {
-        on:      <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => listenWorker(worker, name, handler),
-        send:    <M : mixed, R : mixed>(name : string, message : M) : Promise<R> => readyPromise.then(() => messageWorker(worker, name, message)),
-        require: <T : Object>(name : string) : Promise<T> => readyPromise.then(() => messageWorker(worker, BUILTIN_MESSAGE.REQUIRE, name))
+        on:      processOn,
+        send:    processSend,
+        require: processRequire
     };
 }

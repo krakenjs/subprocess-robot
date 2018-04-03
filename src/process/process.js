@@ -39,7 +39,7 @@ export function listen<M : mixed, R : mixed>(process : AnyProcess | Process, nam
 
 export type ListenFunctionType = typeof listen;
 
-export function send<M : mixed, R : mixed>(proc : AnyProcess | Process, name : string, message : M) : Promise<R> {
+export async function send<M : mixed, R : mixed>(proc : AnyProcess | Process, name : string, message : M) : Promise<R> {
 
     if (!proc) {
         throw new Error(`Expected process to send message to`);
@@ -47,7 +47,7 @@ export function send<M : mixed, R : mixed>(proc : AnyProcess | Process, name : s
 
     let uid = uuidv4();
 
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         responseListeners[uid] = { resolve, reject };
 
         message = serializeMethods(proc, message, listen);
