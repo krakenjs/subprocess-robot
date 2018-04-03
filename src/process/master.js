@@ -3,6 +3,7 @@
 import { spawn } from 'child_process';
 
 import { NODE_PATH, ENV_FLAG, BUILTIN_MESSAGE } from '../conf';
+import { replaceObject } from '../lib';
 import type { AnyProcess, Handler, SpawnedProcess, Cancelable } from '../types';
 
 import { listen, send, setupListener } from './process';
@@ -73,7 +74,24 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
             requireCache[name] = messageWorker(worker, BUILTIN_MESSAGE.REQUIRE, name);
         }
 
-        return await requireCache[name];
+        let mod = await requireCache[name];
+
+        if (process.env.SUBPROCESS_ROBOT_DUPLICATE_REQUIRE_IN_PARENT) {
+            let parentMod = require(name); // eslint-disable-line security/detect-non-literal-require
+            mod = replaceObject(mod, (item, key) => {
+                if (typeof item === 'function') {
+                    return async (...args) => {
+                        let [ childResult ] = await Promise.all([
+                            item(...args),
+                            parentMod[key](...args)
+                        ]);
+                        return childResult;
+                    };
+                }
+            });
+        }
+
+        return mod;
     }
 
     function processKill() {
