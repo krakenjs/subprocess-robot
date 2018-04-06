@@ -8,7 +8,7 @@ import { listen, send, setupListener, isWorker } from './process';
 
 export function listenMaster<M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable {
 
-    if (!isWorker) {
+    if (!isWorker()) {
         throw new Error(`Can only listen to master from worker process`);
     }
 
@@ -17,7 +17,7 @@ export function listenMaster<M : mixed, R : mixed>(name : string, handler : Hand
 
 export function messageMaster<M : mixed, R : mixed>(name : string, message : M) : Promise<R> {
 
-    if (!isWorker) {
+    if (!isWorker()) {
         throw new Error(`Can only message master from worker process`);
     }
 
@@ -31,7 +31,7 @@ type AttachProcess = {
 
 export let attachProcess = memoize(() : AttachProcess => {
 
-    if (!isWorker) {
+    if (!isWorker()) {
         throw new Error(`Can only attach from worker process`);
     }
 
