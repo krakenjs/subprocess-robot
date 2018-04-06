@@ -13,7 +13,7 @@ let methodListeners = new WeakMap();
 
 function listenForMethodCalls(origin, listen) {
     if (!methodListeners.has(origin)) {
-        methodListeners.set(origin, listen(process, BUILTIN_MESSAGE.METHOD_CALL, async ({ uid, args }) => {
+        methodListeners.set(origin, listen(origin, BUILTIN_MESSAGE.METHOD_CALL, async ({ uid, args }) => {
             let { method, process } = serializedMethods[uid];
             if (origin !== process) {
                 throw new Error(`Recieved request for method from wrong processs`);
@@ -24,29 +24,32 @@ function listenForMethodCalls(origin, listen) {
 }
 
 export function serializeMethods<T : mixed>(destination : AnyProcess, obj : T, listen : ListenFunctionType) : T {
-    return replaceObject(obj, (item) => {
+    return replaceObject({ obj }, (item) => {
         if (typeof item === 'function') {
             let uid = uuidv4();
-            serializedMethods[uid] = { process, method: item };
+            serializedMethods[uid] = { process: destination, method: item };
             listenForMethodCalls(destination, listen);
 
             return {
                 __type__: SERIALIZATION_TYPE.METHOD,
+                __name__: item.name,
                 __uid__:  uid
             };
         }
-    });
+    }).obj;
 }
 
 export function deserializeMethods<T : mixed>(origin : AnyProcess, obj : T, send : SendFunctionType) : T {
-    return replaceObject(obj, (item) => {
+    return replaceObject({ obj }, (item) => {
         if (item && item.__type__ === SERIALIZATION_TYPE.METHOD) {
             // $FlowFixMe
             let uid = item.__uid__;
+            // $FlowFixMe
+            let name = item.__name__;
             return async function processMessageWrapper<A : Array<mixed>, R : mixed > (...args : A) : R {
                 // $FlowFixMe
-                return await send(origin, BUILTIN_MESSAGE.METHOD_CALL, { uid, args });
+                return await send(origin, BUILTIN_MESSAGE.METHOD_CALL, { uid, name, args });
             };
         }
-    });
+    }).obj;
 }

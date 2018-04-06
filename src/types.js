@@ -10,6 +10,8 @@ export type Handler<M : mixed, R : mixed> = (M) => (Promise<R> | R);
 
 export type SpawnedProcess = {
     on : <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => Cancelable,
+    once : <M : mixed>(name : string) => Promise<M>,
     send : <M : mixed, R : mixed>(name : string, message : M) => Promise<R>,
-    require : <T : Object>(name : string) => Promise<T>
+    require : <T : Object>(name : string) => Promise<T>,
+    kill : () => void
 };

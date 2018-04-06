@@ -38,13 +38,21 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         return await loadBalance(async (worker) => await worker.require(path));
     }
 
-    return {
+    let processPool = {
         on: <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable => {
             let listeners = values(pool).map(worker => worker.on(name, handler));
 
             return {
                 cancel: () => listeners.forEach(listener => listener.cancel())
             };
+        },
+        once: <M : mixed>(name : string) : Promise<M> => {
+            return new Promise(resolve => {
+                let listener = processPool.on(name, message => {
+                    listener.cancel();
+                    resolve(message);
+                });
+            });
         },
         async send<M : mixed, R : mixed>(name : string, message : M) : Promise<R> {
             return await loadBalance(async (worker) => await worker.send(name, message));
@@ -65,6 +73,8 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
             values(pool).forEach(worker => worker.kill());
         }
     };
+
+    return processPool;
 }
 
  

@@ -6,7 +6,7 @@ import { NODE_PATH, ENV_FLAG, BUILTIN_MESSAGE } from '../conf';
 import { replaceObject } from '../lib';
 import type { AnyProcess, Handler, SpawnedProcess, Cancelable } from '../types';
 
-import { listen, send, setupListener } from './process';
+import { listen, send, setupListener, destroyListeners } from './process';
 
 const DEFAULT_WORKER_SCRIPT = require.resolve('./worker');
 
@@ -60,6 +60,10 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         return listenWorker(worker, name, handler);
     }
 
+    function processOnce<M : mixed>(name : string) : Promise<M> {
+        return listenWorkerOnce(worker, name);
+    }
+
     async function processSend<M : mixed, R : mixed>(name : string, message : M) : Promise<R> {
         await readyPromise;
         return await messageWorker(worker, name, message);
@@ -96,11 +100,13 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
     }
 
     function processKill() {
+        destroyListeners(worker);
         worker.kill();
     }
 
     return {
         on:      processOn,
+        once:    processOnce,
         send:    processSend,
         require: processRequire,
         kill:    processKill

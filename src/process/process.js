@@ -3,11 +3,15 @@
 import uuidv4 from 'uuid/v4';
 
 import type { AnyProcess, Handler, Cancelable } from '../types';
-import { MESSAGE_TYPE, MESSAGE_STATUS, BUILTIN_MESSAGE } from '../conf';
+import { MESSAGE_TYPE, MESSAGE_STATUS, BUILTIN_MESSAGE, ENV_FLAG } from '../conf';
 
 import { serializeMethods, deserializeMethods } from './serialization';
 
-let requestListeners = new WeakMap();
+export function isWorker() : boolean {
+    return Boolean(process.env[ENV_FLAG.PROCESS_ROBOT_WORKER]);
+}
+
+let requestListeners = new Map();
 let responseListeners = {};
 
 function cancelListener(process : AnyProcess, name : string) {
@@ -18,12 +22,12 @@ function cancelListener(process : AnyProcess, name : string) {
     }
 }
 
-export function listen<M : mixed, R : mixed>(process : AnyProcess | Process, name : string, handler : Handler<M, R>) : Cancelable {
-    let nameRequestListeners = requestListeners.get(process);
+export function listen<M : mixed, R : mixed>(proc : AnyProcess, name : string, handler : Handler<M, R>) : Cancelable {
+    let nameRequestListeners = requestListeners.get(proc);
 
     if (!nameRequestListeners) {
         nameRequestListeners = {};
-        requestListeners.set(process, nameRequestListeners);
+        requestListeners.set(proc, nameRequestListeners);
     }
 
     if (nameRequestListeners[name]) {
@@ -33,7 +37,7 @@ export function listen<M : mixed, R : mixed>(process : AnyProcess | Process, nam
     nameRequestListeners[name] = handler;
 
     return {
-        cancel: () => cancelListener(process, name)
+        cancel: () => cancelListener(proc, name)
     };
 }
 
@@ -47,10 +51,10 @@ export async function send<M : mixed, R : mixed>(proc : AnyProcess | Process, na
 
     let uid = uuidv4();
 
+    message = serializeMethods(proc, message, listen);
+
     return await new Promise((resolve, reject) => {
         responseListeners[uid] = { resolve, reject };
-
-        message = serializeMethods(proc, message, listen);
 
         // $FlowFixMe
         proc.send({ type: MESSAGE_TYPE.REQUEST, uid, name, message });
@@ -59,8 +63,8 @@ export async function send<M : mixed, R : mixed>(proc : AnyProcess | Process, na
 
 export type SendFunctionType = typeof send;
 
-export function setupListener(proc : AnyProcess | Process) {
-    proc.on('message', (msg) => {
+export function setupListener(proc : AnyProcess) {
+    proc.on('message', async (msg) => {
         if (!msg || !msg.type) {
             return;
         }
@@ -72,21 +76,24 @@ export function setupListener(proc : AnyProcess | Process) {
             const nameListeners = requestListeners.get(proc);
             const handler = nameListeners && nameListeners[name];
 
-            if (!handler) {
-                throw new Error(`No handler found for message: ${ name } / ${ uid }`);
-            }
-
             let { message } = msg;
+            let response;
 
-            return Promise.resolve()
-                .then(() => handler(deserializeMethods(proc, message, send)))
-                .then(response => {
-                    // $FlowFixMe
-                    proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.SUCCESS, uid, name, response: serializeMethods(proc, response, listen) });
-                }, error => {
-                    // $FlowFixMe
-                    proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.ERROR, uid, name, error: error.stack || error.message });
-                });
+            try {
+                if (!handler) {
+                    throw new Error(`No handler found for message: ${ name } in ${ isWorker() ? 'worker' : 'master' } process ${ process.pid }\n\n${ JSON.stringify(msg, null, 4) }`);
+                }
+
+                response = await handler(deserializeMethods(proc, message, send));
+
+                // $FlowFixMe
+                proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.SUCCESS, uid, name, response: serializeMethods(proc, response, listen) });
+                
+            } catch (err) {
+
+                // $FlowFixMe
+                proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.ERROR, uid, name, error: err.stack || err.message });
+            }
 
         } else if (type === MESSAGE_TYPE.RESPONSE) {
 
@@ -114,3 +121,8 @@ export function setupListener(proc : AnyProcess | Process) {
     });
 }
 
+export function destroyListeners(proc : AnyProcess) {
+    if (requestListeners.has(proc)) {
+        requestListeners.delete(proc);
+    }
+}

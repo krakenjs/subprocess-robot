@@ -1,14 +1,10 @@
 /* @flow */
 
-import { ENV_FLAG, BUILTIN_MESSAGE } from '../conf';
+import { BUILTIN_MESSAGE } from '../conf';
 import { memoize } from '../lib';
 import type { Cancelable, Handler } from '../types';
 
-import { listen, send, setupListener } from './process';
-
-export function isWorker() : boolean {
-    return Boolean(process.env[ENV_FLAG.PROCESS_ROBOT_WORKER]);
-}
+import { listen, send, setupListener, isWorker } from './process';
 
 export function listenMaster<M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable {
 
