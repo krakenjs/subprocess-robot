@@ -13,7 +13,7 @@ if ! git diff-index --quiet --cached HEAD; then
 fi;
 
 npm test;
-npm version patch;
+npm version ${1-patch};
 
 git push;
 git push --tags;
