@@ -6,7 +6,7 @@ export function multiply(n : number, m : number) : number {
 
 export function sleep(time : number) {
 
-    if (process.env.TRAVIS) {
+    if (process.env.TRAVIS || process.env.CI) {
         return;
     }
 
