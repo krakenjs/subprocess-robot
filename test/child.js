@@ -1,8 +1,8 @@
 /* @flow */
 
-import { sleep } from 'sleep';
-
 import { attachProcess } from '../src';
+
+import { sleep } from './exports';
 
 let childProcess = attachProcess();
 
