@@ -66,7 +66,7 @@ parentProcess.on('do_some_blocking_task', data => {
 })
 ```
 
-### Create a pool of processes and require a function
+### Create a pool of processes and import a function
 
 Parent process:
 
@@ -75,7 +75,7 @@ import { spawnProcessPool } from 'subprocess-robot';
 
 const childProcessPool = spawnProcessPool();
 
-let { doSomeBlockingTask } = await childProcessPool.require(require.resolve('./blockingTask'));
+let { doSomeBlockingTask } = await childProcessPool.import(require.resolve('./blockingTask'));
 
 let result = await doSomeBlockingTask(config);
 ```
