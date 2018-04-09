@@ -34,47 +34,55 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         return result;
     }
 
-    async function loadBalanceRequire<T>(path : string) : Promise<T> {
-        return await loadBalance(async (worker) => await worker.require(path));
+    async function loadBalanceImport<T>(path : string) : Promise<T> {
+        return await loadBalance(async (worker) => await worker.import(path));
     }
 
-    let processPool = {
-        on: <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable => {
-            let listeners = values(pool).map(worker => worker.on(name, handler));
+    function processPoolOn <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable {
+        let listeners = values(pool).map(worker => worker.on(name, handler));
 
-            return {
-                cancel: () => listeners.forEach(listener => listener.cancel())
-            };
-        },
-        once: <M : mixed>(name : string) : Promise<M> => {
-            return new Promise(resolve => {
-                let listener = processPool.on(name, message => {
-                    listener.cancel();
-                    resolve(message);
-                });
-            });
-        },
-        async send<M : mixed, R : mixed>(name : string, message : M) : Promise<R> {
-            return await loadBalance(async (worker) => await worker.send(name, message));
-        },
-        async require<T : Object> (name : string) : Promise<T> {
-            let childModule = await loadBalanceRequire(name);
+        return {
+            cancel: () => listeners.forEach(listener => listener.cancel())
+        };
+    }
 
-            return replaceObject(childModule, (item, key) => {
-                if (typeof item === 'function') {
-                    return async function processRequireWrapper<A : mixed, R : mixed>(...args : Array<A>) : Promise<R> {
-                        let loadBalanceModule = await loadBalanceRequire(name);
-                        return await loadBalanceModule[key](...args);
-                    };
-                }
+    function processPoolOnce <M : mixed>(name : string) : Promise<M> {
+        return new Promise(resolve => {
+            let listener = processPoolOn(name, message => {
+                listener.cancel();
+                resolve(message);
             });
-        },
-        kill: () => {
-            values(pool).forEach(worker => worker.kill());
-        }
+        });
+    }
+
+    async function processPoolSend <M : mixed, R : mixed>(name : string, message : M) : Promise<R> {
+        return await loadBalance(async (worker) => await worker.send(name, message));
+    }
+
+    async function processPoolImport <T : Object>(name : string) : Promise<T> {
+        let childModule = await loadBalanceImport(name);
+
+        return replaceObject(childModule, (item, key) => {
+            if (typeof item === 'function') {
+                return async function processImportWrapper<A : mixed, R : mixed>(...args : Array<A>) : Promise<R> {
+                    let loadBalanceModule = await loadBalanceImport(name);
+                    return await loadBalanceModule[key](...args);
+                };
+            }
+        });
+    }
+
+    function processPoolKill() {
+        values(pool).forEach(worker => worker.kill());
+    }
+
+    return {
+        on:     processPoolOn,
+        once:   processPoolOnce,
+        send:   processPoolSend,
+        import: processPoolImport,
+        kill:   processPoolKill
     };
-
-    return processPool;
 }
 
  

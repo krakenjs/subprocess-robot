@@ -117,7 +117,7 @@ test(`Should successfully require a file and call a function`, async () => {
 
     let worker = spawnProcess();
 
-    let { multiply } = await worker.require(require.resolve('./exports'));
+    let { multiply } = await worker.import(require.resolve('./exports'));
 
     let result = await multiply(5, 7);
 

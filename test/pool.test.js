@@ -30,7 +30,7 @@ test(`Should successfully require a file and call a function`, async () => {
 
     let worker = spawnProcessPool();
 
-    let { multiply } = await worker.require(require.resolve('./exports'));
+    let { multiply } = await worker.import(require.resolve('./exports'));
 
     let result = await multiply(5, 7);
 
@@ -46,7 +46,7 @@ test(`Should run several process tasks in parallel using a require`, async () =>
 
     let worker = spawnProcessPool();
 
-    let { sleep } = await worker.require(require.resolve('./exports'));
+    let { sleep } = await worker.import(require.resolve('./exports'));
 
     let start = Date.now();
 

@@ -115,7 +115,7 @@ export function setupListener(proc : AnyProcess) {
         }
     });
 
-    listen(proc, BUILTIN_MESSAGE.REQUIRE, name => {
+    listen(proc, BUILTIN_MESSAGE.IMPORT, name => {
         // $FlowFixMe
         return require(name); // eslint-disable-line security/detect-non-literal-require
     });

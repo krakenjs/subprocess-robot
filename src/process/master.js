@@ -69,18 +69,18 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         return await messageWorker(worker, name, message);
     }
 
-    let requireCache = {};
+    let importCache = {};
 
-    async function processRequire <T : Object>(name : string) : Promise<T> {
+    async function processImport <T : Object>(name : string) : Promise<T> {
         await readyPromise;
 
-        if (!requireCache[name]) {
-            requireCache[name] = messageWorker(worker, BUILTIN_MESSAGE.REQUIRE, name);
+        if (!importCache[name]) {
+            importCache[name] = messageWorker(worker, BUILTIN_MESSAGE.IMPORT, name);
         }
 
-        let mod = await requireCache[name];
+        let mod = await importCache[name];
 
-        if (process.env.SUBPROCESS_ROBOT_DUPLICATE_REQUIRE_IN_PARENT) {
+        if (process.env.SUBPROCESS_ROBOT_DUPLICATE_IMPORT_IN_PARENT) {
             let parentMod = require(name); // eslint-disable-line security/detect-non-literal-require
             mod = replaceObject(mod, (item, key) => {
                 if (typeof item === 'function') {
@@ -108,7 +108,7 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         on:      processOn,
         once:    processOnce,
         send:    processSend,
-        require: processRequire,
+        import:  processImport,
         kill:    processKill
     };
 }
