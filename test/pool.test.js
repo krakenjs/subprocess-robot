@@ -67,3 +67,17 @@ test(`Should run several process tasks in parallel using a require`, async () =>
     worker.kill();
 
 }, 50000);
+
+
+test(`Should successfully require a file using the shorthand and call a function`, async () => {
+
+    let { multiply } = await spawnProcessPool.import(require.resolve('./exports'));
+
+    let result = await multiply(5, 7);
+
+    if (result !== 35) {
+        throw new Error(`Expected result to be 35, got ${ result }`);
+    }
+
+    multiply.__pool__.kill();
+});

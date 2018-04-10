@@ -46,10 +46,12 @@ export function deserializeMethods<T : mixed>(origin : AnyProcess, obj : T, send
             let uid = item.__uid__;
             // $FlowFixMe
             let name = item.__name__;
-            return async function processMessageWrapper<A : Array<mixed>, R : mixed > (...args : A) : R {
+            let processWrapperFunction = async function processMessageWrapper<A : Array<mixed>, R : mixed > (...args : A) : R {
                 // $FlowFixMe
                 return await send(origin, BUILTIN_MESSAGE.METHOD_CALL, { uid, name, args });
             };
+            processWrapperFunction.__process__ = origin;
+            return processWrapperFunction;
         }
     }).obj;
 }

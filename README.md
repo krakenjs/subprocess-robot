@@ -3,9 +3,57 @@ SubProcess Robot
 
 Create subprocesses and deal with messaging. Good for delegating tasks to a differnet process
 
-## Use cases
+### Import a function and run it using a child process
 
-### Create a subprocess and send messages between
+Before:
+
+```javascript
+import { slowSynchronousTask } from './synchronous-tasks';
+
+export function synchronousTask(options) {
+    return slowSynchronousTask(options);
+}
+```
+
+After:
+
+```javascript
+import { spawnProcess } from 'subprocess-robot';
+
+export async function asynchronousTask(options) {
+    const { slowSynchronousTask } =
+        await spawnProcess.import(require.resolve('./synchronous-tasks'));
+
+    return await slowSynchronousTask(options);
+}
+```
+
+### Load balance your task between a pool of processes
+
+Before:
+
+```javascript
+import { slowSynchronousTask } from './synchronous-tasks';
+
+export function synchronousTask(options) {
+    return slowSynchronousTask(options);
+}
+```
+
+After:
+
+```javascript
+import { spawnProcessPool } from 'subprocess-robot';
+
+export async function asynchronousTask(options) {
+    const { slowSynchronousTask } =
+        await spawnProcessPool.import(require.resolve('./synchronous-tasks'));
+
+    return await slowSynchronousTask(options);
+}
+```
+
+### Manually create a subprocess and send messages between
 
 Parent process:
 
@@ -66,7 +114,7 @@ parentProcess.on('do_some_blocking_task', data => {
 })
 ```
 
-### Create a pool of processes and import a function
+### Manually create a pool of processes and import a function
 
 Parent process:
 

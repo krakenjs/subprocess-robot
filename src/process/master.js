@@ -112,3 +112,14 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         kill:    processKill
     };
 }
+
+let importProcesses = {};
+
+spawnProcess.import = async function importProcess<T : Object>(name : string) : Promise<T> {
+    if (importProcesses[name]) {
+        return await importProcesses[name];
+    }
+    let process = spawnProcess();
+    importProcesses[name] = process.import(name);
+    return await importProcesses[name];
+};
