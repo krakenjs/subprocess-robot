@@ -69,13 +69,22 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         return await messageWorker(worker, name, message);
     }
 
+    function processKill() {
+        destroyListeners(worker);
+        worker.kill();
+    }
+
     let importCache = {};
 
     async function processImport <T : Object>(name : string) : Promise<T> {
         await readyPromise;
 
         if (!importCache[name]) {
-            importCache[name] = messageWorker(worker, BUILTIN_MESSAGE.IMPORT, name);
+            importCache[name] = messageWorker(worker, BUILTIN_MESSAGE.IMPORT, name)
+                .then(childModule => {
+                    childModule.killProcess = processKill;
+                    return childModule;
+                });
         }
 
         let mod = await importCache[name];
@@ -97,11 +106,6 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         }
 
         return mod;
-    }
-
-    function processKill() {
-        destroyListeners(worker);
-        worker.kill();
     }
 
     return {

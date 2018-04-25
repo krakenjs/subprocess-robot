@@ -167,7 +167,7 @@ test(`Should call attachProcess multiple times`, async () => {
 
 test(`Should successfully require a file using the shorthand and call a function`, async () => {
 
-    let { multiply } = await spawnProcess.import(require.resolve('./exports'));
+    let { multiply, killProcess } = await spawnProcess.import(require.resolve('./exports'));
 
     let result = await multiply(5, 7);
 
@@ -175,5 +175,5 @@ test(`Should successfully require a file using the shorthand and call a function
         throw new Error(`Expected result to be 35, got ${ result }`);
     }
 
-    multiply.__process__.kill();
+    killProcess();
 });

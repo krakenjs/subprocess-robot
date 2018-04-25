@@ -59,6 +59,10 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         return await loadBalance(async (worker) => await worker.send(name, message));
     }
 
+    function processPoolKill() {
+        values(pool).forEach(worker => worker.kill());
+    }
+
     let processPoolImportCache = {};
 
     async function processPoolImport <T : Object>(name : string) : Promise<T> {
@@ -68,23 +72,21 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         }
 
         processPoolImportCache[name] = loadBalanceImport(name).then(childModule => {
-            return replaceObject(childModule, (item, key) => {
+            childModule = replaceObject(childModule, (item, key) => {
                 if (typeof item === 'function') {
                     let importWrapper = async function processImportWrapper<A : mixed, R : mixed>(...args : Array<A>) : Promise<R> {
                         let loadBalanceModule = await loadBalanceImport(name);
                         return await loadBalanceModule[key](...args);
                     };
-                    importWrapper.__pool__ = this;
                     return importWrapper;
                 }
             });
+
+            childModule.killProcessPool = processPoolKill;
+            return childModule;
         });
 
         return await processPoolImportCache[name];
-    }
-
-    function processPoolKill() {
-        values(pool).forEach(worker => worker.kill());
     }
 
     return {
