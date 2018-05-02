@@ -5,7 +5,7 @@ import uuidv4 from 'uuid/v4';
 import type { AnyProcess, Handler, Cancelable } from '../types';
 import { MESSAGE_TYPE, MESSAGE_STATUS, BUILTIN_MESSAGE, ENV_FLAG } from '../conf';
 
-import { serializeMethods, deserializeMethods } from './serialization';
+import { serializeObject, deserializeObject } from './serialization';
 
 export function isWorker() : boolean {
     return Boolean(process.env[ENV_FLAG.PROCESS_ROBOT_WORKER]);
@@ -51,7 +51,7 @@ export async function send<M : mixed, R : mixed>(proc : AnyProcess | Process, na
 
     let uid = uuidv4();
 
-    message = serializeMethods(proc, message, listen);
+    message = serializeObject(proc, message, listen);
 
     return await new Promise((resolve, reject) => {
         responseListeners[uid] = { resolve, reject };
@@ -84,10 +84,10 @@ export function setupListener(proc : AnyProcess) {
                     throw new Error(`No handler found for message: ${ name } in ${ isWorker() ? 'worker' : 'master' } process ${ process.pid }\n\n${ JSON.stringify(msg, null, 4) }`);
                 }
 
-                response = await handler(deserializeMethods(proc, message, send));
+                response = await handler(deserializeObject(proc, message, send));
 
                 // $FlowFixMe
-                proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.SUCCESS, uid, name, response: serializeMethods(proc, response, listen) });
+                proc.send({ type: MESSAGE_TYPE.RESPONSE, status: MESSAGE_STATUS.SUCCESS, uid, name, response: serializeObject(proc, response, listen) });
                 
             } catch (err) {
 
@@ -108,7 +108,7 @@ export function setupListener(proc : AnyProcess) {
             let { status, response, error } = msg;
 
             if (status === MESSAGE_STATUS.SUCCESS) {
-                resolve(deserializeMethods(proc, response, send));
+                resolve(deserializeObject(proc, response, send));
             } else if (status === MESSAGE_STATUS.ERROR) {
                 reject(new Error(error));
             }

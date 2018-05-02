@@ -22,5 +22,6 @@ export const ENV_FLAG = {
 };
 
 export const SERIALIZATION_TYPE = {
-    METHOD: 'method'
+    METHOD: 'method',
+    ERROR:  'error'
 };

@@ -177,3 +177,44 @@ test(`Should successfully require a file using the shorthand and call a function
 
     killProcess();
 });
+
+test(`Should successfully serialize and deserialize an error`, async () => {
+
+    let worker = spawnProcess({ script: require.resolve('./child') });
+
+    let err = new Error('Something went wrong');
+    // $FlowFixMe
+    err.code = 'SOMETHING_WENT_WRONG';
+
+    let listener = new Promise(resolve => worker.on('hello', resolve));
+
+    await worker.send('send', {
+        name:    'hello',
+        message: { err }
+    });
+
+    let message = await listener;
+
+    if (!message) {
+        throw new Error(`Expected hello message from child process`);
+    }
+
+    if (!message.err) {
+        throw new Error(`Expected message to contain err`);
+    }
+
+    if (!(message.err instanceof Error)) {
+        throw new TypeError(`Expected err to be instance of Error`);
+    }
+
+    if (!message.err.code) {
+        throw new Error(`Expected error to have a code`);
+    }
+
+    // $FlowFixMe
+    if (message.err.code !== err.code) {
+        throw new Error(`Expected code to match`);
+    }
+
+    worker.kill();
+});

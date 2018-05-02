@@ -23,8 +23,9 @@ function listenForMethodCalls(origin, listen) {
     }
 }
 
-export function serializeMethods<T : mixed>(destination : AnyProcess, obj : T, listen : ListenFunctionType) : T {
+export function serializeObject<T : mixed>(destination : AnyProcess, obj : T, listen : ListenFunctionType) : T {
     return replaceObject({ obj }, (item) => {
+
         if (typeof item === 'function') {
             let uid = uuidv4();
             serializedMethods[uid] = { process: destination, method: item };
@@ -36,11 +37,21 @@ export function serializeMethods<T : mixed>(destination : AnyProcess, obj : T, l
                 __uid__:  uid
             };
         }
+
+        if (item instanceof Error) {
+            return {
+                __type__:    SERIALIZATION_TYPE.ERROR,
+                __stack__:   item.stack,
+                __code__:    item.code
+            };
+        }
+
     }).obj;
 }
 
-export function deserializeMethods<T : mixed>(origin : AnyProcess, obj : T, send : SendFunctionType) : T {
+export function deserializeObject<T : mixed>(origin : AnyProcess, obj : T, send : SendFunctionType) : T {
     return replaceObject({ obj }, (item) => {
+
         if (item && item.__type__ === SERIALIZATION_TYPE.METHOD) {
             // $FlowFixMe
             let uid = item.__uid__;
@@ -53,5 +64,14 @@ export function deserializeMethods<T : mixed>(origin : AnyProcess, obj : T, send
             processWrapperFunction.__process__ = origin;
             return processWrapperFunction;
         }
+
+        if (item && item.__type__ === SERIALIZATION_TYPE.ERROR) {
+            // $FlowFixMe
+            let err = new Error(item.__stack__);
+            // $FlowFixMe
+            err.code = item.__code__;
+            return err;
+        }
+
     }).obj;
 }
