@@ -103,6 +103,8 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
                     };
                 }
             });
+
+            mod.killProcess = processKill;
         }
 
         return mod;
