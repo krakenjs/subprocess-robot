@@ -1,6 +1,6 @@
 {
   "name": "subprocess-robot",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Create processes, process pools, and message between processes",
   "main": "index.js",
   "scripts": {
