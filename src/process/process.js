@@ -2,7 +2,7 @@
 
 import uuidv4 from 'uuid/v4';
 
-import type { AnyProcess, Handler, Cancelable } from '../types';
+import type { NodeProcess, AnyProcess, Handler, Cancelable } from '../types';
 import { MESSAGE_TYPE, MESSAGE_STATUS, BUILTIN_MESSAGE, ENV_FLAG } from '../conf';
 
 import { serializeObject, deserializeObject } from './serialization';
@@ -11,11 +11,11 @@ export function isWorker() : boolean {
     return Boolean(process.env[ENV_FLAG.PROCESS_ROBOT_WORKER]);
 }
 
-let requestListeners = new Map();
-let responseListeners = {};
+const requestListeners = new Map();
+const responseListeners = {};
 
 function cancelListener(process : AnyProcess, name : string) {
-    let nameRequestListeners = requestListeners.get(process);
+    const nameRequestListeners = requestListeners.get(process);
 
     if (nameRequestListeners) {
         delete nameRequestListeners[name];
@@ -43,13 +43,13 @@ export function listen<M : mixed, R : mixed>(proc : AnyProcess, name : string, h
 
 export type ListenFunctionType = typeof listen;
 
-export async function send<M : mixed, R : mixed>(proc : AnyProcess | Process, name : string, message : M) : Promise<R> {
+export async function send<M : mixed, R : mixed>(proc : AnyProcess | NodeProcess, name : string, message : M) : Promise<R> {
 
     if (!proc) {
         throw new Error(`Expected process to send message to`);
     }
 
-    let uid = uuidv4();
+    const uid = uuidv4();
 
     message = serializeObject(proc, message, listen);
 
@@ -69,14 +69,14 @@ export function setupListener(proc : AnyProcess) {
             return;
         }
 
-        let { uid, name, type } = msg;
+        const { uid, name, type } = msg;
 
         if (type === MESSAGE_TYPE.REQUEST) {
 
             const nameListeners = requestListeners.get(proc);
             const handler = nameListeners && nameListeners[name];
 
-            let { message } = msg;
+            const { message } = msg;
             let response;
 
             try {
@@ -97,15 +97,15 @@ export function setupListener(proc : AnyProcess) {
 
         } else if (type === MESSAGE_TYPE.RESPONSE) {
 
-            let responseHandler = responseListeners[uid];
+            const responseHandler = responseListeners[uid];
 
             if (!responseHandler) {
                 throw new Error(`No response handler found for message: ${ name }, ${ uid }`);
             }
 
-            let { resolve, reject } = responseHandler;
+            const { resolve, reject } = responseHandler;
 
-            let { status, response, error } = msg;
+            const { status, response, error } = msg;
 
             if (status === MESSAGE_STATUS.SUCCESS) {
                 resolve(deserializeObject(proc, response, send));

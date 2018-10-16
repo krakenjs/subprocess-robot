@@ -7,10 +7,10 @@ import { replaceObject, values } from '../lib';
 
 import { spawnProcess } from './master';
 
-type SpawnPoolOptions = {
+type SpawnPoolOptions = {|
     script? : string,
     count? : number
-};
+|};
 
 export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOptions = {}) : SpawnedProcess {
 
@@ -18,8 +18,8 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         throw new Error(`Can not create process pool with less than 1 process`);
     }
 
-    let pool = {};
-    let work = {};
+    const pool = {};
+    const work = {};
 
     for (let i = 0; i < count; i++) {
         pool[i] = spawnProcess({ script });
@@ -27,9 +27,9 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
     }
 
     async function loadBalance<T>(handler : (worker : SpawnedProcess) => Promise<T>) : Promise<T> {
-        let pid = Object.keys(pool).sort((a, b) => (work[a] - work[b]))[0];
+        const pid = Object.keys(pool).sort((a, b) => (work[a] - work[b]))[0];
         work[pid] += 1;
-        let result = await handler(pool[pid]);
+        const result = await handler(pool[pid]);
         work[pid] -= 1;
         return result;
     }
@@ -39,7 +39,7 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
     }
 
     function processPoolOn <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable {
-        let listeners = values(pool).map(worker => worker.on(name, handler));
+        const listeners = values(pool).map(worker => worker.on(name, handler));
 
         return {
             cancel: () => listeners.forEach(listener => listener.cancel())
@@ -48,7 +48,7 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
 
     function processPoolOnce <M : mixed>(name : string) : Promise<M> {
         return new Promise(resolve => {
-            let listener = processPoolOn(name, message => {
+            const listener = processPoolOn(name, message => {
                 listener.cancel();
                 resolve(message);
             });
@@ -63,7 +63,7 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         values(pool).forEach(worker => worker.kill());
     }
 
-    let processPoolImportCache = {};
+    const processPoolImportCache = {};
 
     async function processPoolImport <T : Object>(name : string) : Promise<T> {
 
@@ -74,8 +74,8 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         processPoolImportCache[name] = loadBalanceImport(name).then(childModule => {
             childModule = replaceObject(childModule, (item, key) => {
                 if (typeof item === 'function') {
-                    let importWrapper = async function processImportWrapper<A : mixed, R : mixed>(...args : Array<A>) : Promise<R> {
-                        let loadBalanceModule = await loadBalanceImport(name);
+                    const importWrapper = async function processImportWrapper<A : mixed, R : mixed>(...args : $ReadOnlyArray<A>) : Promise<R> {
+                        const loadBalanceModule = await loadBalanceImport(name);
                         return await loadBalanceModule[key](...args);
                     };
                     return importWrapper;
@@ -98,13 +98,13 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
     };
 }
 
-let importPoolProcesses = {};
+const importPoolProcesses = {};
 
 spawnProcessPool.import = async function importProcessPool<T : Object>(name : string) : Promise<T> {
     if (importPoolProcesses[name]) {
         return await importPoolProcesses[name];
     }
-    let pool = spawnProcessPool();
+    const pool = spawnProcessPool();
     importPoolProcesses[name] = pool.import(name);
     return await importPoolProcesses[name];
 };

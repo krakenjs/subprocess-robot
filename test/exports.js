@@ -10,7 +10,7 @@ export function sleep(time : number) {
         return;
     }
 
-    let start = Date.now();
+    const start = Date.now();
 
     while ((Date.now() - start) < time) {
         // pass

@@ -4,7 +4,7 @@ import { spawnProcess } from '../src';
 
 test(`Should successfully call a function on a different process`, async () => {
 
-    let worker = spawnProcess({ script: require.resolve('./child') });
+    const worker = spawnProcess({ script: require.resolve('./child') });
 
     let called = false;
 

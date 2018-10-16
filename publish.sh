@@ -13,6 +13,7 @@ if ! git diff-index --quiet --cached HEAD; then
 fi;
 
 npm test;
+rm ./package-lock.json || echo 'No package lock';
 npm version ${1-patch};
 
 git push;

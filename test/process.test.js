@@ -4,16 +4,16 @@ import { spawnProcess } from '../src';
 
 test(`Should successfully set up a process and recieve a message`, async () => {
     
-    let worker = spawnProcess({ script: require.resolve('./child') });
+    const worker = spawnProcess({ script: require.resolve('./child') });
 
-    let listener = new Promise(resolve => worker.on('hello', resolve));
+    const listener = new Promise(resolve => worker.on('hello', resolve));
 
     await worker.send('send', {
         name:    'hello',
         message: { foo: 'bar' }
     });
 
-    let message = await listener;
+    const message = await listener;
 
     if (!message) {
         throw new Error(`Expected hello message from child process`);
@@ -36,16 +36,16 @@ test(`Should successfully set up a process and recieve a message`, async () => {
 
 test(`Should successfully set up a process and recieve a message a single time`, async () => {
 
-    let worker = spawnProcess({ script: require.resolve('./child') });
+    const worker = spawnProcess({ script: require.resolve('./child') });
 
-    let listener = worker.once('hello');
+    const listener = worker.once('hello');
 
     await worker.send('send', {
         name:    'hello',
         message: { foo: 'bar' }
     });
 
-    let message = await listener;
+    const message = await listener;
 
     if (!message) {
         throw new Error(`Expected hello message from child process`);
@@ -83,7 +83,7 @@ test(`Should successfully set up a process and recieve a message a single time`,
 
 test(`Should successfully set up a process and send/receive a message`, async () => {
 
-    let worker = spawnProcess({ script: require.resolve('./child') });
+    const worker = spawnProcess({ script: require.resolve('./child') });
 
     await worker.send('listen', {
         name:    'ping',
@@ -96,7 +96,7 @@ test(`Should successfully set up a process and send/receive a message`, async ()
         }
     });
 
-    let response = await worker.send('ping', { type: 'ping' });
+    const response = await worker.send('ping', { type: 'ping' });
     
     if (!response || response.type !== 'pong') {
         throw new Error(`Expected message.type to be pong`);
@@ -115,11 +115,11 @@ test(`Should successfully set up a process and send/receive a message`, async ()
 
 test(`Should successfully require a file and call a function`, async () => {
 
-    let worker = spawnProcess();
+    const worker = spawnProcess();
 
-    let { multiply } = await worker.import(require.resolve('./exports'));
+    const { multiply } = await worker.import(require.resolve('./exports'));
 
-    let result = await multiply(5, 7);
+    const result = await multiply(5, 7);
 
     if (result !== 35) {
         throw new Error(`Expected result to be 35, got ${ result }`);
@@ -132,7 +132,7 @@ test(`Should successfully require a file and call a function`, async () => {
 
 test(`Should message a process and handle an error`, async () => {
 
-    let worker = spawnProcess({ script: require.resolve('./child') });
+    const worker = spawnProcess({ script: require.resolve('./child') });
 
     await worker.send('listen', {
         name:    'error',
@@ -158,7 +158,7 @@ test(`Should message a process and handle an error`, async () => {
 
 test(`Should call attachProcess multiple times`, async () => {
 
-    let worker = spawnProcess({ script: require.resolve('./child') });
+    const worker = spawnProcess({ script: require.resolve('./child') });
 
     await worker.send('reattach');
     
@@ -167,9 +167,9 @@ test(`Should call attachProcess multiple times`, async () => {
 
 test(`Should successfully require a file using the shorthand and call a function`, async () => {
 
-    let { multiply, killProcess } = await spawnProcess.import(require.resolve('./exports'));
+    const { multiply, killProcess } = await spawnProcess.import(require.resolve('./exports'));
 
-    let result = await multiply(5, 7);
+    const result = await multiply(5, 7);
 
     if (result !== 35) {
         throw new Error(`Expected result to be 35, got ${ result }`);
@@ -180,20 +180,20 @@ test(`Should successfully require a file using the shorthand and call a function
 
 test(`Should successfully serialize and deserialize an error`, async () => {
 
-    let worker = spawnProcess({ script: require.resolve('./child') });
+    const worker = spawnProcess({ script: require.resolve('./child') });
 
-    let err = new Error('Something went wrong');
+    const err = new Error('Something went wrong');
     // $FlowFixMe
     err.code = 'SOMETHING_WENT_WRONG';
 
-    let listener = new Promise(resolve => worker.on('hello', resolve));
+    const listener = new Promise(resolve => worker.on('hello', resolve));
 
     await worker.send('send', {
         name:    'hello',
         message: { err }
     });
 
-    let message = await listener;
+    const message = await listener;
 
     if (!message) {
         throw new Error(`Expected hello message from child process`);

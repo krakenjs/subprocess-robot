@@ -4,7 +4,7 @@ import { attachProcess } from '../src';
 
 import { sleep } from './exports';
 
-let childProcess = attachProcess();
+const childProcess = attachProcess();
 
 childProcess.on('send', async ({ name, message }) => {
     message.pid = process.pid;
@@ -13,7 +13,7 @@ childProcess.on('send', async ({ name, message }) => {
 
 childProcess.on('listen', ({ name, handler }) => {
     childProcess.on(name, async (message) => {
-        let response = await handler(message);
+        const response = await handler(message);
         response.pid = process.pid;
         return response;
     });
@@ -28,8 +28,8 @@ childProcess.on('sleep', ({ time }) => {
 });
 
 childProcess.on('reattach', () => {
-    let childProcess1 = attachProcess();
-    let childProcess2 = attachProcess();
+    const childProcess1 = attachProcess();
+    const childProcess2 = attachProcess();
 
     if (childProcess1 !== childProcess2) {
         throw new Error(`Expected attachProcess to return the same thing every time`);

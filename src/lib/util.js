@@ -17,14 +17,14 @@ export function replaceObject<T : mixed> (item : T, replacer : (item : mixed, ke
     }
 
     // $FlowFixMe
-    let keys   = Object.keys(item);
-    let result = Array.isArray(item) ? [] : {};
+    const keys   = Object.keys(item);
+    const result = Array.isArray(item) ? [] : {};
     
     for (let i = 0; i < keys.length; i++) {
-        let key = keys[i];
+        const key = keys[i];
 
         // $FlowFixMe
-        let child = item[key];
+        const child = item[key];
 
         let replaced = replacer(child, key);
 
@@ -41,14 +41,14 @@ export function replaceObject<T : mixed> (item : T, replacer : (item : mixed, ke
 }
 
 // eslint-disable-next-line flowtype/no-weak-types
-export function memoize<R>(method : (...args: Array<any>) => R) : ((...args: Array<any>) => R) {
+export function memoize<R>(method : (...args: $ReadOnlyArray<any>) => R) : ((...args: $ReadOnlyArray<any>) => R) {
 
-    let cache: { [string] : R } = {};
+    const cache : { [string] : R } = {};
 
     // eslint-disable-next-line no-unused-vars, flowtype/no-weak-types
-    return function memoizedFunction(...args : Array<any>) : R {
+    return function memoizedFunction(...args : $ReadOnlyArray<any>) : R {
 
-        let key: string;
+        let key : string;
 
         try {
             key = JSON.stringify(Array.prototype.slice.call(arguments));
@@ -66,9 +66,9 @@ export function memoize<R>(method : (...args: Array<any>) => R) : ((...args: Arr
     };
 }
 
-export function values<T>(obj : { [string] : T }) : Array<T> {
-    let result = [];
-    for (let key in obj) {
+export function values<T>(obj : { [string] : T }) : $ReadOnlyArray<T> {
+    const result = [];
+    for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
             result.push(obj[key]);
         }

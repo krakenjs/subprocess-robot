@@ -24,12 +24,12 @@ export function messageMaster<M : mixed, R : mixed>(name : string, message : M) 
     return send(process, name, message);
 }
 
-type AttachProcess = {
-    on : <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => Cancelable,
-    send : <M : mixed, R : mixed>(name : string, message : M) => Promise<R>
-};
+type AttachProcess = {|
+    on : <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => Cancelable, // eslint-disable-line no-undef
+    send : <M : mixed, R : mixed>(name : string, message : M) => Promise<R> // eslint-disable-line no-undef
+|};
 
-export let attachProcess = memoize(() : AttachProcess => {
+export const attachProcess = memoize(() : AttachProcess => {
 
     if (!isWorker()) {
         throw new Error(`Can only attach from worker process`);

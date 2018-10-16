@@ -16,7 +16,7 @@ export function listenWorker<M : mixed, R : mixed>(worker : AnyProcess, name : s
 
 export function listenWorkerOnce<M : mixed>(worker : AnyProcess, name : string) : Promise<M> {
     return new Promise(resolve => {
-        let listener = listenWorker(worker, name, message => {
+        const listener = listenWorker(worker, name, message => {
             listener.cancel();
             resolve(message);
         });
@@ -27,15 +27,15 @@ export function messageWorker<M : mixed, R : mixed>(worker : AnyProcess, name : 
     return send(worker, name, message);
 }
 
-type SpawnOptions = {
+type SpawnOptions = {|
     script? : string
-};
+|};
 
 export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
 
     script = script || DEFAULT_WORKER_SCRIPT;
 
-    let worker = spawn(NODE_PATH, [ '--require', 'babel-register', script ], {
+    const worker = spawn(NODE_PATH, [ '--require', '@babel/register', script ], {
         stdio: [ null, null, null, 'ipc' ],
         env:   {
             ...process.env,
@@ -54,7 +54,7 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
 
     setupListener(worker);
 
-    let readyPromise = listenWorkerOnce(worker, BUILTIN_MESSAGE.READY);
+    const readyPromise = listenWorkerOnce(worker, BUILTIN_MESSAGE.READY);
 
     function processOn <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable {
         return listenWorker(worker, name, handler);
@@ -74,7 +74,7 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         worker.kill();
     }
 
-    let importCache = {};
+    const importCache = {};
 
     async function processImport <T : Object>(name : string) : Promise<T> {
         await readyPromise;
@@ -90,12 +90,12 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         let mod = await importCache[name];
 
         if (process.env.SUBPROCESS_ROBOT_DUPLICATE_IMPORT_IN_PARENT) {
-            let parentMod = require(name); // eslint-disable-line security/detect-non-literal-require
+            const parentMod = require(name); // eslint-disable-line security/detect-non-literal-require
             mod = replaceObject(mod, (item, key) => {
                 if (typeof item === 'function') {
                     const func = item;
                     return async (...args) => {
-                        let [ childResult ] = await Promise.all([
+                        const [ childResult ] = await Promise.all([
                             func(...args),
                             parentMod[key](...args)
                         ]);
@@ -119,13 +119,13 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
     };
 }
 
-let importProcesses = {};
+const importProcesses = {};
 
 spawnProcess.import = async function importProcess<T : Object>(name : string) : Promise<T> {
     if (importProcesses[name]) {
         return await importProcesses[name];
     }
-    let process = spawnProcess();
+    const process = spawnProcess();
     importProcesses[name] = process.import(name);
     return await importProcesses[name];
 };

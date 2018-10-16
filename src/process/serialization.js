@@ -8,13 +8,13 @@ import type { AnyProcess } from '../types';
 
 import type { ListenFunctionType, SendFunctionType } from './process';
 
-let serializedMethods = {};
-let methodListeners = new WeakMap();
+const serializedMethods = {};
+const methodListeners = new WeakMap();
 
 function listenForMethodCalls(origin, listen) {
     if (!methodListeners.has(origin)) {
         methodListeners.set(origin, listen(origin, BUILTIN_MESSAGE.METHOD_CALL, async ({ uid, args }) => {
-            let { method, process } = serializedMethods[uid];
+            const { method, process } = serializedMethods[uid];
             if (origin !== process) {
                 throw new Error(`Recieved request for method from wrong processs`);
             }
@@ -27,7 +27,7 @@ export function serializeObject<T : mixed>(destination : AnyProcess, obj : T, li
     return replaceObject({ obj }, (item) => {
 
         if (typeof item === 'function') {
-            let uid = uuidv4();
+            const uid = uuidv4();
             serializedMethods[uid] = { process: destination, method: item };
             listenForMethodCalls(destination, listen);
 
@@ -54,10 +54,10 @@ export function deserializeObject<T : mixed>(origin : AnyProcess, obj : T, send 
 
         if (item && item.__type__ === SERIALIZATION_TYPE.METHOD) {
             // $FlowFixMe
-            let uid = item.__uid__;
+            const uid = item.__uid__;
             // $FlowFixMe
-            let name = item.__name__;
-            let processWrapperFunction = async function processMessageWrapper<A : Array<mixed>, R : mixed > (...args : A) : R {
+            const name = item.__name__;
+            const processWrapperFunction = async function processMessageWrapper<A : $ReadOnlyArray<mixed>, R : mixed > (...args : A) : R {
                 // $FlowFixMe
                 return await send(origin, BUILTIN_MESSAGE.METHOD_CALL, { uid, name, args });
             };
@@ -67,7 +67,7 @@ export function deserializeObject<T : mixed>(origin : AnyProcess, obj : T, send 
 
         if (item && item.__type__ === SERIALIZATION_TYPE.ERROR) {
             // $FlowFixMe
-            let err = new Error(item.__stack__);
+            const err = new Error(item.__stack__);
             // $FlowFixMe
             err.code = item.__code__;
             return err;
