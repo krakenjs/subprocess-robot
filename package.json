@@ -12,7 +12,7 @@
     "lint": "eslint src/ test/ *.js",
     "prepublish": "in-publish && npm run flow:build && npm run babel || not-in-publish",
     "postpublish": "git checkout ./src && rm ./src/index.js.flow",
-    "jest": "jest test --env=node --no-cache --coverage --verbose --runInBand --silent=false"
+    "jest": "jest test --env=node --no-cache --coverage --collectCoverageFrom=./src --verbose --runInBand --silent=false"
   },
   "repository": {
     "type": "git",
@@ -33,7 +33,7 @@
     "babel-core": "^7.0.0-bridge.0",
     "flow-bin": "^0.69.0",
     "grumbler-scripts": "^3",
-    "jest": "^22.4.3",
+    "jest": "^24",
     "sleep": "^5.1.1"
   },
   "dependencies": {
