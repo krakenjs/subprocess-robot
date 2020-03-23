@@ -6,11 +6,13 @@ import { sleep } from './exports';
 
 const childProcess = attachProcess();
 
+// $FlowFixMe
 childProcess.on('send', async ({ name, message }) => {
     message.pid = process.pid;
     return await childProcess.send(name, message);
 });
 
+// $FlowFixMe
 childProcess.on('listen', ({ name, handler }) => {
     childProcess.on(name, async (message) => {
         const response = await handler(message);
@@ -20,13 +22,16 @@ childProcess.on('listen', ({ name, handler }) => {
 });
 
 childProcess.on('call', async (method) => {
+    // $FlowFixMe
     return await method();
 });
 
+// $FlowFixMe
 childProcess.on('sleep', ({ time }) => {
     sleep(time);
 });
 
+// $FlowFixMe
 childProcess.on('reattach', () => {
     const childProcess1 = attachProcess();
     const childProcess2 = attachProcess();

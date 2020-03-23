@@ -4,7 +4,7 @@
   "description": "Create processes, process pools, and message between processes",
   "main": "index.js",
   "scripts": {
-    "flow-typed": "flow-typed install",
+    "flow-typed": "rm -rf ./flow-typed && flow-typed install",
     "flow:build": "flow gen-flow-files ./src/index.js --out-dir ./src",
     "babel": "babel ./src --ignore=node_modules --out-dir ./src",
     "test": "npm run lint && npm run flow-typed && npm run flow && npm run jest",
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/krakenjs/subprocess-robot#readme",
   "devDependencies": {
     "babel-core": "^7.0.0-bridge.0",
-    "flow-bin": "^0.69.0",
+    "flow-bin": "^0.116.1",
     "grumbler-scripts": "^3",
     "jest": "^24",
     "sleep": "^5.1.1"

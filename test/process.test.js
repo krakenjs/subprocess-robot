@@ -6,6 +6,7 @@ test(`Should successfully set up a process and recieve a message`, async () => {
     
     const worker = spawnProcess({ script: require.resolve('./child') });
 
+    // $FlowFixMe
     const listener = new Promise(resolve => worker.on('hello', resolve));
 
     await worker.send('send', {
@@ -167,6 +168,7 @@ test(`Should call attachProcess multiple times`, async () => {
 
 test(`Should successfully require a file using the shorthand and call a function`, async () => {
 
+    // $FlowFixMe
     const { multiply, killProcess } = await spawnProcess.import(require.resolve('./exports'));
 
     const result = await multiply(5, 7);
@@ -186,6 +188,7 @@ test(`Should successfully serialize and deserialize an error`, async () => {
     // $FlowFixMe
     err.code = 'SOMETHING_WENT_WRONG';
 
+    // $FlowFixMe
     const listener = new Promise(resolve => worker.on('hello', resolve));
 
     await worker.send('send', {
@@ -207,6 +210,7 @@ test(`Should successfully serialize and deserialize an error`, async () => {
         throw new TypeError(`Expected err to be instance of Error`);
     }
 
+    // $FlowFixMe
     if (!message.err.code) {
         throw new Error(`Expected error to have a code`);
     }

@@ -19,6 +19,7 @@ test(`Should successfully require a file and call a function`, async () => {
 
 test(`Should successfully require a file using the shorthand and call a function`, async () => {
 
+    // $FlowFixMe
     const { multiply, killProcessPool } = await spawnProcessPool.import(require.resolve('./exports'));
 
     const result = await multiply(5, 7);

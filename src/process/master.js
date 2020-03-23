@@ -96,6 +96,7 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
                     const func = item;
                     return async (...args) => {
                         const [ childResult ] = await Promise.all([
+                            // $FlowFixMe
                             func(...args),
                             parentMod[key](...args)
                         ]);

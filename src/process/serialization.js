@@ -42,6 +42,7 @@ export function serializeObject<T : mixed>(destination : AnyProcess, obj : T, li
             return {
                 __type__:    SERIALIZATION_TYPE.ERROR,
                 __stack__:   item.stack,
+                // $FlowFixMe
                 __code__:    item.code
             };
         }
