@@ -6,7 +6,7 @@
   "scripts": {
     "flow-typed": "flow-typed install",
     "flow:build": "flow gen-flow-files ./src/index.js --out-dir ./src",
-    "babel": "babel ./src --exclude=node_modules --out-dir ./src",
+    "babel": "babel ./src --ignore=node_modules --out-dir ./src",
     "test": "npm run lint && npm run flow-typed && npm run flow && npm run jest",
     "flow": "flow",
     "lint": "eslint src/ test/ *.js",
