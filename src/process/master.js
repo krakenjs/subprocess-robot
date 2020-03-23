@@ -127,5 +127,11 @@ spawnProcess.import = async function importProcess<T : Object>(name : string) : 
     }
     const process = spawnProcess();
     importProcesses[name] = process.import(name);
-    return await importProcesses[name];
+    try {
+        return await importProcesses[name];
+    } catch (err) {
+        process.kill();
+        delete importProcesses[name];
+        throw err;
+    }
 };
