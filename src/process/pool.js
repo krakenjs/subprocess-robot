@@ -99,12 +99,17 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         return await processPoolImportCache[name];
     }
 
+    const onDisconnect = () => {
+        throw new Error(`Not implemented`);
+    };
+
     return {
-        on:     processPoolOn,
-        once:   processPoolOnce,
-        send:   processPoolSend,
-        import: processPoolImport,
-        kill:   processPoolKill
+        on:           processPoolOn,
+        once:         processPoolOnce,
+        send:         processPoolSend,
+        import:       processPoolImport,
+        kill:         processPoolKill,
+        onDisconnect
     };
 }
 

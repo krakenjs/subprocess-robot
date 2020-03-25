@@ -32,6 +32,7 @@ type SpawnOptions = {|
 |};
 
 export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
+    const onDisconnectHandlers = [];
 
     script = script || DEFAULT_WORKER_SCRIPT;
 
@@ -53,6 +54,12 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
     });
 
     setupListener(worker);
+
+    worker.on('disconnect', () => {
+        for (const handler of onDisconnectHandlers) {
+            handler();
+        }
+    });
 
     const readyPromise = listenWorkerOnce(worker, BUILTIN_MESSAGE.READY);
 
@@ -108,31 +115,54 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
             mod.killProcess = processKill;
         }
 
+        if (mod) {
+            // eslint-disable-next-line no-use-before-define
+            mod.__process__ = spawnedProcess;
+        }
+
         return mod;
     }
 
-    return {
-        on:      processOn,
-        once:    processOnce,
-        send:    processSend,
-        import:  processImport,
-        kill:    processKill
+    const processOnDisconnect = (handler) => {
+        onDisconnectHandlers.push(handler);
     };
+
+    const spawnedProcess = {
+        on:           processOn,
+        once:         processOnce,
+        send:         processSend,
+        import:       processImport,
+        kill:         processKill,
+        onDisconnect: processOnDisconnect
+    };
+
+    return spawnedProcess;
 }
 
 const importProcesses = {};
 
-spawnProcess.import = async function importProcess<T : Object>(name : string) : Promise<T> {
+spawnProcess.import = async function importProcess<T : Object>(name : string) : Promise<T & {| __process__ : SpawnedProcess |}> {
     if (importProcesses[name]) {
         return await importProcesses[name];
     }
+
     const process = spawnProcess();
-    importProcesses[name] = process.import(name);
+    const importModulePromise = process.import(name);
+
+    process.onDisconnect(() => {
+        delete importProcesses[name];
+    });
+
+    importProcesses[name] = importModulePromise;
+    let importModule;
+
     try {
-        return await importProcesses[name];
+        importModule = await importProcesses[name];
     } catch (err) {
         process.kill();
         delete importProcesses[name];
         throw err;
     }
+    
+    return importModule;
 };
