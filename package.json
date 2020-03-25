@@ -10,7 +10,7 @@
     "flow": "flow",
     "lint": "eslint src/ test/ *.js",
     "prepublish": "in-publish && npm run babel || not-in-publish",
-    "postpublish": "git checkout ./src && rm ./src/index.js.flow",
+    "postpublish": "git checkout ./src",
     "jest": "jest test --env=node --no-cache --coverage --collectCoverageFrom=./src --verbose --runInBand --silent=false"
   },
   "repository": {
