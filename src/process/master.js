@@ -33,6 +33,26 @@ type SpawnOptions = {|
 
 export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
     const onDisconnectHandlers = [];
+    const onErrorHandlers = [];
+    const onCloseHandlers = [];
+
+    const onDisconnect = () => {
+        for (const handler of onDisconnectHandlers) {
+            handler();
+        }
+    };
+
+    const onError = (err) => {
+        for (const handler of onErrorHandlers) {
+            handler(err);
+        }
+    };
+
+    const onClose = () => {
+        for (const handler of onCloseHandlers) {
+            handler();
+        }
+    };
 
     script = script || DEFAULT_WORKER_SCRIPT;
 
@@ -55,11 +75,12 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
 
     setupListener(worker);
 
-    worker.on('disconnect', () => {
-        for (const handler of onDisconnectHandlers) {
-            handler();
-        }
-    });
+    worker.on('disconnect', onDisconnect);
+    worker.on('error', onError);
+    worker.on('uncaughtException', onError);
+    worker.on('unhandledRejection', onError);
+    worker.on('close', onClose);
+    worker.on('exit', onClose);
 
     const readyPromise = listenWorkerOnce(worker, BUILTIN_MESSAGE.READY);
 
@@ -127,13 +148,23 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
         onDisconnectHandlers.push(handler);
     };
 
+    const processOnError = (handler) => {
+        onErrorHandlers.push(handler);
+    };
+
+    const processOnClose = (handler) => {
+        onCloseHandlers.push(handler);
+    };
+
     const spawnedProcess = {
         on:           processOn,
         once:         processOnce,
         send:         processSend,
         import:       processImport,
         kill:         processKill,
-        onDisconnect: processOnDisconnect
+        onDisconnect: processOnDisconnect,
+        onError:      processOnError,
+        onClose:      processOnClose
     };
 
     return spawnedProcess;

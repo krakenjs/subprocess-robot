@@ -99,7 +99,7 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         return await processPoolImportCache[name];
     }
 
-    const onDisconnect = () => {
+    const eventHandler = () => {
         throw new Error(`Not implemented`);
     };
 
@@ -109,7 +109,9 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         send:         processPoolSend,
         import:       processPoolImport,
         kill:         processPoolKill,
-        onDisconnect
+        onDisconnect: eventHandler,
+        onClose:      eventHandler,
+        onError:      eventHandler
     };
 }
 

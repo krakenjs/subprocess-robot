@@ -18,5 +18,7 @@ export type SpawnedProcess = {|
     send : <M : mixed, R : mixed>(name : string, message : M) => Promise<R>, // eslint-disable-line no-undef
     import : <T : Object>(name : string) => Promise<T & {| __process__ : SpawnedProcess |}>, // eslint-disable-line no-undef
     kill : () => void,
-    onDisconnect : (() => void) => void
+    onDisconnect : (() => void) => void,
+    onClose : (() => void) => void,
+    onError : ((mixed) => void) => void
 |};
