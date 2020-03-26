@@ -6,7 +6,7 @@ import { NODE_PATH, ENV_FLAG, BUILTIN_MESSAGE } from '../conf';
 import { replaceObject } from '../lib';
 import type { AnyProcess, Handler, SpawnedProcess, Cancelable } from '../types';
 
-import { listen, send, setupListener, destroyListeners } from './process';
+import { listen, send, setupListener, destroyListeners, errorListeners } from './process';
 
 const DEFAULT_WORKER_SCRIPT = require.resolve('./worker');
 
@@ -36,24 +36,6 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
     const onErrorHandlers = [];
     const onCloseHandlers = [];
 
-    const onDisconnect = () => {
-        for (const handler of onDisconnectHandlers) {
-            handler();
-        }
-    };
-
-    const onError = (err) => {
-        for (const handler of onErrorHandlers) {
-            handler(err);
-        }
-    };
-
-    const onClose = () => {
-        for (const handler of onCloseHandlers) {
-            handler();
-        }
-    };
-
     script = script || DEFAULT_WORKER_SCRIPT;
 
     const worker = spawn(NODE_PATH, [ '--require', '@babel/register', script ], {
@@ -64,6 +46,35 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
             [ ENV_FLAG.PROCESS_ROBOT_WORKER ]: '1'
         }
     });
+
+    function processKill() {
+        destroyListeners(worker);
+        worker.kill();
+    }
+
+    const onDisconnect = () => {
+        processKill();
+        errorListeners(worker, 'Worker process disconnected');
+        for (const handler of onDisconnectHandlers) {
+            handler();
+        }
+    };
+
+    const onError = (err) => {
+        processKill();
+        errorListeners(worker, err);
+        for (const handler of onErrorHandlers) {
+            handler(err);
+        }
+    };
+
+    const onClose = () => {
+        processKill();
+        errorListeners(worker, 'Worker process closed');
+        for (const handler of onCloseHandlers) {
+            handler();
+        }
+    };
 
     worker.stdout.on('data', (data) => {
         process.stdout.write(data.toString());
@@ -95,11 +106,6 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
     async function processSend<M : mixed, R : mixed>(name : string, message : M) : Promise<R> {
         await readyPromise;
         return await messageWorker(worker, name, message);
-    }
-
-    function processKill() {
-        destroyListeners(worker);
-        worker.kill();
     }
 
     const importCache = {};

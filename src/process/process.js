@@ -12,7 +12,7 @@ export function isWorker() : boolean {
 }
 
 const requestListeners = new Map();
-const responseListeners = {};
+const responseListeners = new Map();
 
 function cancelListener(process : AnyProcess, name : string) {
     const nameRequestListeners = requestListeners.get(process);
@@ -54,7 +54,9 @@ export async function send<M : mixed, R : mixed>(proc : AnyProcess | NodeProcess
     message = serializeObject(proc, message, listen);
 
     return await new Promise((resolve, reject) => {
-        responseListeners[uid] = { resolve, reject };
+        const listeners = responseListeners.get(proc) || {};
+        listeners[uid] = { resolve, reject };
+        responseListeners.set(proc, listeners);
 
         // $FlowFixMe
         proc.send({ type: MESSAGE_TYPE.REQUEST, uid, name, message });
@@ -97,7 +99,8 @@ export function setupListener(proc : AnyProcess) {
 
         } else if (type === MESSAGE_TYPE.RESPONSE) {
 
-            const responseHandler = responseListeners[uid];
+            const listeners = responseListeners.get(proc) || {};
+            const responseHandler = listeners[uid];
 
             if (!responseHandler) {
                 throw new Error(`No response handler found for message: ${ name }, ${ uid }`);
@@ -124,5 +127,13 @@ export function setupListener(proc : AnyProcess) {
 export function destroyListeners(proc : AnyProcess) {
     if (requestListeners.has(proc)) {
         requestListeners.delete(proc);
+    }
+}
+
+export function errorListeners(proc : AnyProcess, err : mixed) {
+    const listeners = responseListeners.get(proc) || {};
+    for (const key of Object.keys(listeners)) {
+        const { reject } = listeners[key];
+        reject(err);
     }
 }
