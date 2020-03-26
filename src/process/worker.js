@@ -1,5 +1,7 @@
 /* @flow */
 
+import { stringifyError } from 'belter';
+
 import { BUILTIN_MESSAGE } from '../conf';
 import { memoize } from '../lib';
 import type { Cancelable, Handler } from '../types';
@@ -37,6 +39,13 @@ export const attachProcess = memoize(() : AttachProcess => {
 
     setupListener(process);
     messageMaster(BUILTIN_MESSAGE.READY);
+
+    const sendError = (err) => {
+        messageMaster(BUILTIN_MESSAGE.ERROR, stringifyError(err));
+    };
+
+    process.on('uncaughtException', sendError);
+    process.on('unhandledRejection', sendError);
 
     return {
         on:   <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) => listenMaster(name, handler),

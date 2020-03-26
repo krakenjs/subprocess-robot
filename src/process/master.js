@@ -94,6 +94,7 @@ export function spawnProcess({ script } : SpawnOptions = {}) : SpawnedProcess {
     worker.on('exit', onClose);
 
     const readyPromise = listenWorkerOnce(worker, BUILTIN_MESSAGE.READY);
+    listenWorkerOnce(worker, BUILTIN_MESSAGE.ERROR).then(onError);
 
     function processOn <M : mixed, R : mixed>(name : string, handler : Handler<M, R>) : Cancelable {
         return listenWorker(worker, name, handler);

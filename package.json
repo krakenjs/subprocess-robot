@@ -36,6 +36,7 @@
     "sleep": "^5.1.1"
   },
   "dependencies": {
+    "belter": "^1.0.120",
     "uuid": "^3.2.1"
   }
 }

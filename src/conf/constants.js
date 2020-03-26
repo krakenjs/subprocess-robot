@@ -12,6 +12,7 @@ export const MESSAGE_STATUS = {
 
 export const BUILTIN_MESSAGE = {
     READY:       '__subprocess_robot_ready__',
+    ERROR:       '__subprocess_robot_error__',
     IMPORT:      '__subprocess_robot_import__',
     METHOD_CALL: '__subprocess_robot_method_call__'
 };
