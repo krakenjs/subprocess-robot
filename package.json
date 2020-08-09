@@ -32,8 +32,7 @@
     "babel-core": "^7.0.0-bridge.0",
     "flow-bin": "^0.116.1",
     "grumbler-scripts": "^3",
-    "jest": "^24",
-    "sleep": "^5.1.1"
+    "jest": "^24"
   },
   "dependencies": {
     "belter": "^1.0.120",
