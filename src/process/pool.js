@@ -30,16 +30,14 @@ export function spawnProcessPool({ script, count = cpus().length } : SpawnPoolOp
         const pid = Object.keys(pool).sort((a, b) => (work[a] - work[b]))[0];
         work[pid] += 1;
         let result;
-        
+
         try {
             result = await handler(pool[pid]);
         } catch (err) {
-            // eslint-disable-next-line require-atomic-updates
             work[pid] -= 1;
             throw err;
         }
-        
-        // eslint-disable-next-line require-atomic-updates
+
         work[pid] -= 1;
         return result;
     }
