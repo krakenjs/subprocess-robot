@@ -1,7 +1,8 @@
 {
-  "name": "subprocess-robot",
+  "name": "@krakenjs/subprocess-robot",
   "version": "2.0.13",
   "description": "Create processes, process pools, and message between processes",
+  "private": false,
   "main": "index.js",
   "scripts": {
     "flow-typed": "rm -rf ./flow-typed && flow-typed install",
@@ -9,9 +10,13 @@
     "test": "npm run lint && npm run flow-typed && npm run flow && npm run jest",
     "flow": "flow",
     "lint": "eslint src/ test/ *.js",
+    "prepare": "husky install",
+    "jest": "jest test --env=node --no-cache --coverage --collectCoverageFrom=./src --verbose --runInBand --silent=false",
+    "prerelease": "npm run test",
+    "release": "standard-version",
+    "postrelease": "git push && git push --follow-tags && npm publish",
     "prepublishOnly": "npm run babel",
-    "postpublish": "git checkout ./src",
-    "jest": "jest test --env=node --no-cache --coverage --collectCoverageFrom=./src --verbose --runInBand --silent=false"
+    "postpublish": "git checkout ./src"
   },
   "repository": {
     "type": "git",
@@ -29,13 +34,56 @@
   },
   "homepage": "https://github.com/krakenjs/subprocess-robot#readme",
   "devDependencies": {
-    "babel-core": "^7.0.0-bridge.0",
-    "flow-bin": "^0.116.1",
-    "grumbler-scripts": "^3",
-    "jest": "^24"
+    "@commitlint/cli": "^16.2.3",
+    "@commitlint/config-conventional": "^16.2.1",
+    "@krakenjs/grumbler-scripts": "^6.0.2",
+    "flow-bin": "0.116.1",
+    "husky": "^7.0.4",
+    "jest": "^27"
   },
   "dependencies": {
+    "@krakenjs/belter": "^2.0.2",
     "belter": "^1.0.120",
     "uuid": "^3.2.1"
+  },
+  "standard-version": {
+    "types": [
+      {
+        "type": "feat",
+        "section": "Features"
+      },
+      {
+        "type": "fix",
+        "section": "Bug Fixes"
+      },
+      {
+        "type": "chore",
+        "hidden": false
+      },
+      {
+        "type": "docs",
+        "hidden": false
+      },
+      {
+        "type": "style",
+        "hidden": false
+      },
+      {
+        "type": "refactor",
+        "hidden": false
+      },
+      {
+        "type": "perf",
+        "hidden": false
+      },
+      {
+        "type": "test",
+        "hidden": false
+      },
+      {
+        "type": "ci",
+        "hidden": true
+      }
+    ]
   }
 }
