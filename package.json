@@ -39,7 +39,8 @@
     "@krakenjs/grumbler-scripts": "^6.0.2",
     "flow-bin": "0.116.1",
     "husky": "^7.0.4",
-    "jest": "^27"
+    "jest": "^27",
+    "standard-version": "^9.5.0"
   },
   "dependencies": {
     "@krakenjs/belter": "^2.0.2",
