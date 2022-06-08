@@ -1,3 +1,4 @@
 {
-    "extends": "@krakenjs/grumbler-scripts/config/.babelrc-node"
+    "extends": "@krakenjs/grumbler-scripts/config/.babelrc-node",
+    "presets": ["@krakenjs/grumbler-scripts/config/flow-ts-babel-preset"]
 }
