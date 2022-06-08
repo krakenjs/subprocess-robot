@@ -17,3 +17,19 @@ test(`Should successfully call a function on a different process`, async () => {
 
   worker.kill();
 });
+
+test(`Should successfully call a function on a different process with typescript`, async () => {
+  const worker = spawnProcess({ script: require.resolve("./childTypescript") });
+
+  let called = false;
+
+  await worker.send("call", () => {
+    called = true;
+  });
+
+  if (!called) {
+    throw new Error(`Expected function to be called`);
+  }
+
+  worker.kill();
+});
