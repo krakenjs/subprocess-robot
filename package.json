@@ -7,7 +7,9 @@
   "scripts": {
     "flow-typed": "rm -rf ./flow-typed && flow-typed install",
     "babel": "babel ./src --ignore=node_modules --out-dir ./src",
-    "test": "npm run lint && npm run flow-typed && npm run flow && npm run jest",
+    "format": "prettier --write --ignore-unknown .",
+    "format:check": "prettier --check .",
+    "test": "npm run format:check && npm run lint && npm run flow-typed && npm run flow && npm run jest",
     "flow": "flow",
     "lint": "eslint src/ test/ *.js",
     "prepare": "husky install",
@@ -36,10 +38,12 @@
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",
     "@commitlint/config-conventional": "^16.2.1",
-    "@krakenjs/grumbler-scripts": "^6.0.2",
+    "@krakenjs/grumbler-scripts": "^7.0.0",
     "flow-bin": "0.116.1",
     "husky": "^7.0.4",
     "jest": "^27",
+    "lint-staged": "^13.0.3",
+    "prettier": "2.7.1",
     "standard-version": "^9.5.0"
   },
   "dependencies": {
@@ -86,5 +90,8 @@
         "hidden": true
       }
     ]
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   }
 }

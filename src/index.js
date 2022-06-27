@@ -1,3 +1,3 @@
 /* @flow */
 
-export { attachProcess, spawnProcess, spawnProcessPool } from './process';
+export { attachProcess, spawnProcess, spawnProcessPool } from "./process";

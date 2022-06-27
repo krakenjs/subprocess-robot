@@ -1,5 +1,4 @@
-SubProcess Robot
-----------------
+## SubProcess Robot
 
 Create subprocesses and deal with messaging. Good for delegating tasks to a differnet process
 
@@ -8,23 +7,24 @@ Create subprocesses and deal with messaging. Good for delegating tasks to a diff
 Before:
 
 ```javascript
-import { slowSynchronousTask } from './synchronous-tasks';
+import { slowSynchronousTask } from "./synchronous-tasks";
 
 export function synchronousTask(options) {
-    return slowSynchronousTask(options);
+  return slowSynchronousTask(options);
 }
 ```
 
 After:
 
 ```javascript
-import { spawnProcess } from 'subprocess-robot';
+import { spawnProcess } from "subprocess-robot";
 
 export async function asynchronousTask(options) {
-    const { slowSynchronousTask } =
-        await spawnProcess.import(require.resolve('./synchronous-tasks'));
+  const { slowSynchronousTask } = await spawnProcess.import(
+    require.resolve("./synchronous-tasks")
+  );
 
-    return await slowSynchronousTask(options);
+  return await slowSynchronousTask(options);
 }
 ```
 
@@ -33,23 +33,24 @@ export async function asynchronousTask(options) {
 Before:
 
 ```javascript
-import { slowSynchronousTask } from './synchronous-tasks';
+import { slowSynchronousTask } from "./synchronous-tasks";
 
 export function synchronousTask(options) {
-    return slowSynchronousTask(options);
+  return slowSynchronousTask(options);
 }
 ```
 
 After:
 
 ```javascript
-import { spawnProcessPool } from 'subprocess-robot';
+import { spawnProcessPool } from "subprocess-robot";
 
 export async function asynchronousTask(options) {
-    const { slowSynchronousTask } =
-        await spawnProcessPool.import(require.resolve('./synchronous-tasks'));
+  const { slowSynchronousTask } = await spawnProcessPool.import(
+    require.resolve("./synchronous-tasks")
+  );
 
-    return await slowSynchronousTask(options);
+  return await slowSynchronousTask(options);
 }
 ```
 
@@ -78,13 +79,13 @@ childProcess.on('getUser', ({ id ) => {
 Child process:
 
 ```javascript
-import { attachProcess } from 'subprocess-robot';
+import { attachProcess } from "subprocess-robot";
 
 const parentProcess = attachProcess();
 
-let user = await parentProcess.send('getUser', { id: 1337 });
+let user = await parentProcess.send("getUser", { id: 1337 });
 
-console.log(`Logging ${ user.name } out`);
+console.log(`Logging ${user.name} out`);
 await user.logout();
 ```
 
@@ -93,25 +94,25 @@ await user.logout();
 Parent process:
 
 ```javascript
-import { spawnProcessPool } from 'subprocess-robot';
+import { spawnProcessPool } from "subprocess-robot";
 
 const childProcessPool = spawnProcessPool({
-    script: require.resolve('./child')
+  script: require.resolve("./child"),
 });
 
-let result = childProcessPool.send('do_some_blocking_task', data);
+let result = childProcessPool.send("do_some_blocking_task", data);
 ```
 
 Child process:
 
 ```javascript
-import { attachProcess } from 'subprocess-robot';
+import { attachProcess } from "subprocess-robot";
 
 const parentProcess = attachProcess();
 
-parentProcess.on('do_some_blocking_task', data => {
-    return slowSynchronousCompile(data);
-})
+parentProcess.on("do_some_blocking_task", (data) => {
+  return slowSynchronousCompile(data);
+});
 ```
 
 ### Manually create a pool of processes and import a function
@@ -119,11 +120,13 @@ parentProcess.on('do_some_blocking_task', data => {
 Parent process:
 
 ```javascript
-import { spawnProcessPool } from 'subprocess-robot';
+import { spawnProcessPool } from "subprocess-robot";
 
 const childProcessPool = spawnProcessPool();
 
-let { doSomeBlockingTask } = await childProcessPool.import(require.resolve('./blockingTask'));
+let { doSomeBlockingTask } = await childProcessPool.import(
+  require.resolve("./blockingTask")
+);
 
 let result = await doSomeBlockingTask(config);
 ```
@@ -132,7 +135,7 @@ Child process:
 
 ```javascript
 export function doSomeBlockingTask(config) {
-    return slowSynchronousCompile(config);
+  return slowSynchronousCompile(config);
 }
 ```
 
@@ -149,4 +152,3 @@ npm install --save subprocess-robot
   ```bash
   npm test
   ```
-
