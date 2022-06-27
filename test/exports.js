@@ -1,18 +1,17 @@
 /* @flow */
 
-export function multiply(n : number, m : number) : number {
-    return n * m;
+export function multiply(n: number, m: number): number {
+  return n * m;
 }
 
-export function sleep(time : number) {
+export function sleep(time: number) {
+  if (process.env.TRAVIS || process.env.CI) {
+    return;
+  }
 
-    if (process.env.TRAVIS || process.env.CI) {
-        return;
-    }
+  const start = Date.now();
 
-    const start = Date.now();
-
-    while ((Date.now() - start) < time) {
-        // pass
-    }
+  while (Date.now() - start < time) {
+    // pass
+  }
 }
