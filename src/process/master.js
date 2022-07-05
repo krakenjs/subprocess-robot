@@ -1,6 +1,7 @@
 /* @flow */
 
 import { spawn } from "child_process";
+import path from "path";
 
 import { NODE_PATH, ENV_FLAG, BUILTIN_MESSAGE } from "../conf";
 import { replaceObject } from "../lib";
@@ -49,20 +50,34 @@ type SpawnOptions = {|
 |};
 
 export function spawnProcess({ script }: SpawnOptions = {}): SpawnedProcess {
+  let worker;
   const onDisconnectHandlers = [];
   const onErrorHandlers = [];
   const onCloseHandlers = [];
-
-  script = script || DEFAULT_WORKER_SCRIPT;
-
-  const worker = spawn(NODE_PATH, ["--require", "@babel/register", script], {
+  const isTypeScript = path.extname(script || "").includes(".ts");
+  const spawnOpts = {
     stdio: [null, null, null, "ipc"],
     env: {
       ...process.env,
       [ENV_FLAG.BABEL_DISABLE_CACHE]: "1",
       [ENV_FLAG.PROCESS_ROBOT_WORKER]: "1",
     },
-  });
+  };
+
+  script = script || DEFAULT_WORKER_SCRIPT;
+
+  if (isTypeScript) {
+    const registerPath = path.normalize(
+      path.join(__dirname, "./", "register.js")
+    );
+    worker = spawn(NODE_PATH, ["-r", registerPath, script], spawnOpts);
+  } else {
+    worker = spawn(
+      NODE_PATH,
+      ["--require", "@babel/register", script],
+      spawnOpts
+    );
+  }
 
   function processKill() {
     destroyListeners(worker);
