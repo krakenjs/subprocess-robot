@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## 2.2.0 (2022-08-17)
+
+
+### Features
+
+* add `useTypeScriptRegister` as an optional param to `spawnProcess` ([#7](https://github.com/krakenjs/subprocess-robot/issues/7)) ([06ff086](https://github.com/krakenjs/subprocess-robot/commit/06ff08630ddade44638461904c6265c17460ffb4))
+
 ## 2.1.0 (2022-07-05)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@krakenjs/subprocess-robot",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Create processes, process pools, and message between processes",
   "private": false,
   "main": "index.js",
