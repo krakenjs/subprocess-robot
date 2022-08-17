@@ -33,3 +33,22 @@ test(`Should successfully call a function on a different process with typescript
 
   worker.kill();
 });
+
+test("Should successfully call a function on a different process with `useTypeScriptRegister=true`", async () => {
+  const worker = spawnProcess({
+    script: require.resolve("./childTypescript"),
+    useTypeScriptRegister: true,
+  });
+
+  let called = false;
+
+  await worker.send("call", () => {
+    called = true;
+  });
+
+  if (!called) {
+    throw new Error(`Expected function to be called`);
+  }
+
+  worker.kill();
+});

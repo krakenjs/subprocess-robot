@@ -47,14 +47,19 @@ export function messageWorker<M: mixed, R: mixed>(
 
 type SpawnOptions = {|
   script?: string,
+  useTypeScriptRegister?: boolean,
 |};
 
-export function spawnProcess({ script }: SpawnOptions = {}): SpawnedProcess {
+export function spawnProcess({
+  script,
+  useTypeScriptRegister,
+}: SpawnOptions = {}): SpawnedProcess {
   let worker;
   const onDisconnectHandlers = [];
   const onErrorHandlers = [];
   const onCloseHandlers = [];
-  const isTypeScript = path.extname(script || "").includes(".ts");
+  const isTypeScript =
+    useTypeScriptRegister || path.extname(script || "").includes(".ts");
   const spawnOpts = {
     stdio: [null, null, null, "ipc"],
     env: {
