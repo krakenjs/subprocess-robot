@@ -1,4 +1,4 @@
 {
-  "extends": "@krakenjs/babel-config-grumbler/babel-node",
+  "extends": "@krakenjs/babel-config-grumbler/babelrc-node",
   "presets": ["@babel/preset-typescript"]
 }
